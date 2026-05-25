@@ -4,11 +4,35 @@ using InventoryBackend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
+static string? ToPostgresConnectionString(string databaseUrl)
+{
+    if (!databaseUrl.StartsWith("postgres", StringComparison.OrdinalIgnoreCase))
+        return databaseUrl;
+
+    var uri = new Uri(databaseUrl);
+    var userInfo = uri.UserInfo.Split(':', 2);
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+    return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? ToPostgresConnectionString(Environment.GetEnvironmentVariable("DATABASE_URL") ?? "");
+
+var usePostgres = builder.Configuration["Database:Provider"] == "PostgreSQL"
+    || (connectionString?.Contains("Host=", StringComparison.OrdinalIgnoreCase) ?? false)
+    || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"));
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (usePostgres)
+        options.UseNpgsql(connectionString);
+    else
+        options.UseSqlServer(connectionString);
+});
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
@@ -54,7 +78,10 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    if (usePostgres)
+        await db.Database.EnsureCreatedAsync();
+    else
+        await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db);
 }
 

@@ -1,0 +1,28 @@
+# Render Blueprint — API + PostgreSQL (no Azure needed)
+databases:
+  - name: inventory-db
+    plan: free
+    databaseName: inventory
+
+services:
+  - type: web
+    name: inventory-api
+    runtime: dotnet
+    rootDir: backend
+    plan: free
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: dotnet out/InventoryBackend.dll
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Database__Provider
+        value: PostgreSQL
+      - key: Jwt__Issuer
+        value: InventoryAPI
+      - key: Jwt__Audience
+        value: InventoryUsers
+      - key: Jwt__Key
+        generateValue: true
+      - fromDatabase:
+          name: inventory-db
+          property: connectionString
