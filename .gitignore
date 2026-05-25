@@ -1,0 +1,33 @@
+# Backend (.NET)
+backend/bin/
+backend/obj/
+backend/publish/
+backend/**/*.user
+backend/**/*.suo
+backend/.vs/
+
+# Frontend (Node)
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# IDE / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.sw?
+
+# Secrets (never commit)
+**/appsettings.*.local.json
+.env
+.env.local

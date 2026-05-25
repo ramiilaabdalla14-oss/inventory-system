@@ -1,0 +1,94 @@
+@host = http://localhost:5026
+@baseUrl = {{host}}/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### 1. Login — copy token from response into @token above
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@inventory.com",
+  "password": "Admin@123"
+}
+
+### 2. Dashboard stats
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{token}}
+
+### 3. Products
+GET {{baseUrl}}/products
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/products/1
+Authorization: Bearer {{token}}
+
+###
+POST {{baseUrl}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Laptop",
+  "description": "Test product",
+  "price": 500,
+  "quantity": 10,
+  "imageUrl": null,
+  "documentUrl": null
+}
+
+###
+PUT {{baseUrl}}/products/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Laptop Updated",
+  "description": "Test",
+  "price": 550,
+  "quantity": 8,
+  "imageUrl": null,
+  "documentUrl": null
+}
+
+###
+DELETE {{baseUrl}}/products/1
+Authorization: Bearer {{token}}
+
+### 4. Sales
+GET {{baseUrl}}/sales
+Authorization: Bearer {{token}}
+
+###
+POST {{baseUrl}}/sales
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+###
+DELETE {{baseUrl}}/sales/1
+Authorization: Bearer {{token}}
+
+### 5. Users (Admin)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+###
+POST {{baseUrl}}/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Staff",
+  "email": "staff@inventory.com",
+  "password": "Staff@123",
+  "role": "Staff"
+}
+
+### 6. Upload (Postman: form-data file = file)
+# POST {{baseUrl}}/media/upload?folder=inventory
+# Authorization: Bearer {{token}}
