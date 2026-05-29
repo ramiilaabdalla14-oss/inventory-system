@@ -214,6 +214,12 @@
   font-size: 0.875rem;
 }
 
+.alert-info {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
 .login-demo {
   display: flex;
   flex-direction: column;

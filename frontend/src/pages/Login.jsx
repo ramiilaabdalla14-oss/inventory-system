@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
@@ -11,6 +11,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionExpired = searchParams.get('session') === 'expired';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,6 +62,11 @@ export default function Login() {
             <p>Sign in to your account</p>
           </div>
 
+          {sessionExpired && (
+            <div className="alert alert-info" role="status">
+              Session expired — please sign in again.
+            </div>
+          )}
           {error && <div className="alert" role="alert">{error}</div>}
 
           <label>
