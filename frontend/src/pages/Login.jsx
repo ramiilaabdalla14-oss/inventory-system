@@ -20,8 +20,16 @@ export default function Login() {
       const { data } = await authApi.login(email, password);
       login(data);
       navigate('/');
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err) {
+      if (!err.response) {
+        setError(
+          'API lama helin. Hubi Render (API) inuu shaqeeyo iyo VITE_API_URL Vercel.'
+        );
+      } else if (err.response.status === 401) {
+        setError('Invalid email or password.');
+      } else {
+        setError(`Server error (${err.response.status}). Hubi Render logs.`);
+      }
     } finally {
       setLoading(false);
     }

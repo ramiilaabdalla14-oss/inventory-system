@@ -7,13 +7,18 @@ using Microsoft.IdentityModel.Tokens;
 
 static string? ToPostgresConnectionString(string databaseUrl)
 {
+    if (string.IsNullOrWhiteSpace(databaseUrl))
+        return databaseUrl;
+
     if (!databaseUrl.StartsWith("postgres", StringComparison.OrdinalIgnoreCase))
         return databaseUrl;
 
     var uri = new Uri(databaseUrl);
     var userInfo = uri.UserInfo.Split(':', 2);
     var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
-    return $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    var database = uri.AbsolutePath.TrimStart('/');
+    return $"Host={uri.Host};Port={port};Database={database};Username={userInfo[0]};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
 
 var builder = WebApplication.CreateBuilder(args);
@@ -75,14 +80,26 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+app.MapGet("/health", () => Results.Ok("healthy"));
+
+for (var attempt = 1; attempt <= 10; attempt++)
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    if (usePostgres)
-        await db.Database.EnsureCreatedAsync();
-    else
-        await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db);
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        if (usePostgres)
+            await db.Database.EnsureCreatedAsync();
+        else
+            await db.Database.MigrateAsync();
+        await DbSeeder.SeedAsync(db);
+        break;
+    }
+    catch (Exception ex) when (attempt < 10)
+    {
+        Console.WriteLine($"Database init attempt {attempt} failed: {ex.Message}");
+        await Task.Delay(TimeSpan.FromSeconds(5));
+    }
 }
 
 if (app.Environment.IsDevelopment())

@@ -62,10 +62,9 @@ namespace InventoryBackend.Data
                       .IsRequired();
 
                 entity.Property(s => s.TotalPrice)
-                      .HasPrecision(18, 2); // FIX decimal warning
+                      .HasPrecision(18, 2);
 
-                entity.Property(s => s.SaleDate)
-                      .HasDefaultValueSql("GETDATE()");
+                // Default set in application code (SaleDate on entity)
             });
 
             modelBuilder.Entity<User>(entity =>
