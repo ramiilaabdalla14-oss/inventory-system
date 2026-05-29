@@ -15,17 +15,41 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
+  const [slowLoad, setSlowLoad] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+
+  const loadStats = async (attempt = 1) => {
+    try {
+      const { data } = await dashboardApi.getStats();
+      setStats(data);
+      setError('');
+    } catch {
+      if (attempt < 4) {
+        setRetrying(true);
+        await new Promise((r) => setTimeout(r, 8000));
+        return loadStats(attempt + 1);
+      }
+      setError(
+        'Server-ka ma jawaabayo. Render (free) wuxuu qaadan karaa 1 daqiiqo marka la toosiyo. Refresh ama sug kadib isku day mar kale.'
+      );
+    } finally {
+      setRetrying(false);
+    }
+  };
 
   useEffect(() => {
-    dashboardApi.getStats()
-      .then((res) => setStats(res.data))
-      .catch(() => setError('Failed to load dashboard.'));
+    const timer = setTimeout(() => setSlowLoad(true), 5000);
+    loadStats();
+    return () => clearTimeout(timer);
   }, []);
 
   if (error) {
     return (
       <div className="page">
         <p className="error-text">{error}</p>
+        <button type="button" className="primary" style={{ marginTop: '1rem' }} onClick={() => { setError(''); setStats(null); loadStats(); }}>
+          Try again
+        </button>
       </div>
     );
   }
@@ -34,7 +58,12 @@ export default function Dashboard() {
     return (
       <div className="loading-state">
         <div className="spinner" />
-        <span>Loading dashboard…</span>
+        <span>{retrying ? 'Retrying connection…' : 'Loading dashboard…'}</span>
+        {slowLoad && (
+          <p className="loading-hint">
+            Render API wuu hurdaa (free tier). Sug 30–60 ilbiriqsi…
+          </p>
+        )}
       </div>
     );
   }

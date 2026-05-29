@@ -77,6 +77,15 @@ a:hover {
   color: var(--text-muted);
 }
 
+.loading-hint {
+  margin: 0;
+  max-width: 320px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--warning);
+  line-height: 1.5;
+}
+
 .spinner {
   width: 36px;
   height: 36px;
