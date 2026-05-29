@@ -23,12 +23,28 @@ static string? ToPostgresConnectionString(string databaseUrl)
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? ToPostgresConnectionString(Environment.GetEnvironmentVariable("DATABASE_URL") ?? "");
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+var configConnection = builder.Configuration.GetConnectionString("DefaultConnection");
 
 var usePostgres = builder.Configuration["Database:Provider"] == "PostgreSQL"
-    || (connectionString?.Contains("Host=", StringComparison.OrdinalIgnoreCase) ?? false)
-    || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL"));
+    || !string.IsNullOrEmpty(databaseUrl)
+    || (configConnection?.Contains("Host=", StringComparison.OrdinalIgnoreCase) ?? false);
+
+string connectionString;
+if (usePostgres)
+{
+    if (!string.IsNullOrEmpty(databaseUrl))
+        connectionString = ToPostgresConnectionString(databaseUrl)!;
+    else if (configConnection?.Contains("Host=", StringComparison.OrdinalIgnoreCase) == true)
+        connectionString = configConnection;
+    else
+        throw new InvalidOperationException("DATABASE_URL is required for PostgreSQL.");
+}
+else
+{
+    connectionString = configConnection
+        ?? throw new InvalidOperationException("DefaultConnection is required for SQL Server.");
+}
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
