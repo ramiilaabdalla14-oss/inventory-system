@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react';
 import { dashboardApi } from '../api/services';
+import { useAuth } from '../context/AuthContext';
 import './Pages.css';
 
+const STAT_CARDS = [
+  { key: 'totalProducts', label: 'Total Products', icon: '📦', variant: 'blue', format: (v) => v },
+  { key: 'totalSales', label: 'Total Sales', icon: '🛒', variant: 'green', format: (v) => v },
+  { key: 'lowStockCount', label: 'Low Stock (≤5)', icon: '⚠️', variant: 'amber', format: (v) => v },
+  { key: 'totalRevenue', label: 'Total Revenue', icon: '💵', variant: 'violet', format: (v) => `$${v.toFixed(2)}` },
+  { key: 'revenueToday', label: 'Revenue Today', icon: '📈', variant: 'cyan', format: (v) => `$${v.toFixed(2)}` },
+];
+
 export default function Dashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
 
@@ -12,64 +22,80 @@ export default function Dashboard() {
       .catch(() => setError('Failed to load dashboard.'));
   }, []);
 
-  if (error) return <p className="error-text">{error}</p>;
-  if (!stats) return <p>Loading...</p>;
+  if (error) {
+    return (
+      <div className="page">
+        <p className="error-text">{error}</p>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="loading-state">
+        <div className="spinner" />
+        <span>Loading dashboard…</span>
+      </div>
+    );
+  }
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
     <div className="page">
       <header className="page-header">
-        <h2>Dashboard</h2>
-        <p>Overview of your inventory system</p>
+        <div>
+          <p className="page-greeting">{greeting}, {user?.name} 👋</p>
+          <h2>Dashboard</h2>
+          <p>Overview of your inventory system</p>
+        </div>
       </header>
 
       <div className="stats-grid">
-        <div className="stat-card">
-          <span>Products</span>
-          <strong>{stats.totalProducts}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Total Sales</span>
-          <strong>{stats.totalSales}</strong>
-        </div>
-        <div className="stat-card warning">
-          <span>Low Stock (≤5)</span>
-          <strong>{stats.lowStockCount}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Total Revenue</span>
-          <strong>${stats.totalRevenue.toFixed(2)}</strong>
-        </div>
-        <div className="stat-card">
-          <span>Revenue Today</span>
-          <strong>${stats.revenueToday.toFixed(2)}</strong>
-        </div>
+        {STAT_CARDS.map(({ key, label, icon, variant, format }) => (
+          <div key={key} className={`stat-card stat-card--${variant}`}>
+            <div className="stat-card__top">
+              <span className="stat-card__label">{label}</span>
+              <span className="stat-card__icon">{icon}</span>
+            </div>
+            <strong className="stat-card__value">{format(stats[key])}</strong>
+          </div>
+        ))}
       </div>
 
       <section className="panel">
-        <h3>Recent Sales</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Total</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.recentSales.map((s) => (
-              <tr key={s.id}>
-                <td>{s.productName}</td>
-                <td>{s.quantity}</td>
-                <td>${s.totalPrice.toFixed(2)}</td>
-                <td>{new Date(s.saleDate).toLocaleString()}</td>
+        <div className="panel-header">
+          <h3>Recent Sales</h3>
+          <span className="panel-badge">{stats.recentSales.length} records</span>
+        </div>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Date</th>
               </tr>
-            ))}
-            {stats.recentSales.length === 0 && (
-              <tr><td colSpan={4}>No sales yet.</td></tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {stats.recentSales.map((s) => (
+                <tr key={s.id}>
+                  <td><span className="table-product">{s.productName}</span></td>
+                  <td><span className="qty-badge">{s.quantity}</span></td>
+                  <td className="money">${s.totalPrice.toFixed(2)}</td>
+                  <td className="text-muted">{new Date(s.saleDate).toLocaleString()}</td>
+                </tr>
+              ))}
+              {stats.recentSales.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="empty-cell">No sales recorded yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
   );

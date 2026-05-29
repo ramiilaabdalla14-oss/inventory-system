@@ -91,6 +91,11 @@ export default function Users() {
       </form>
 
       <section className="panel">
+        <div className="panel-header">
+          <h3>All Users</h3>
+          <span className="panel-badge">{users.length} users</span>
+        </div>
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -105,7 +110,7 @@ export default function Users() {
               <tr key={u.id}>
                 <td>{u.name}</td>
                 <td>{u.email}</td>
-                <td>{u.role}</td>
+                <td><span className="role-badge">{u.role}</span></td>
                 <td className="btn-row">
                   <button type="button" className="secondary" onClick={() => handleEdit(u)}>Edit</button>
                   <button type="button" className="danger" onClick={() => handleDelete(u.id)}>Delete</button>
@@ -114,6 +119,7 @@ export default function Users() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );

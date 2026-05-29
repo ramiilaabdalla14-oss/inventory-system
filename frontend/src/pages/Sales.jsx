@@ -77,6 +77,11 @@ export default function Sales() {
       </form>
 
       <section className="panel">
+        <div className="panel-header">
+          <h3>Sales History</h3>
+          <span className="panel-badge">{sales.length} records</span>
+        </div>
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -92,7 +97,7 @@ export default function Sales() {
               <tr key={s.id}>
                 <td>{s.productName}</td>
                 <td>{s.quantity}</td>
-                <td>${s.totalPrice.toFixed(2)}</td>
+                <td className="money">${s.totalPrice.toFixed(2)}</td>
                 <td>{new Date(s.saleDate).toLocaleString()}</td>
                 <td>
                   <button type="button" className="danger" onClick={() => handleDelete(s.id)}>Delete</button>
@@ -101,6 +106,7 @@ export default function Sales() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );

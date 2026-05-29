@@ -74,7 +74,7 @@ export default function Products() {
       <header className="page-toolbar">
         <div>
           <h2>Products</h2>
-          <p>Manage inventory. Images/documents stored on Cloudinary (URL only in DB).</p>
+          <p>Add, edit, and manage your inventory items.</p>
         </div>
       </header>
 
@@ -127,6 +127,11 @@ export default function Products() {
       </form>
 
       <section className="panel">
+        <div className="panel-header">
+          <h3>All Products</h3>
+          <span className="panel-badge">{products.length} items</span>
+        </div>
+        <div className="table-wrap">
         <table>
           <thead>
             <tr>
@@ -146,7 +151,11 @@ export default function Products() {
                 </td>
                 <td>{p.name}</td>
                 <td>${p.price.toFixed(2)}</td>
-                <td>{p.quantity}</td>
+                <td>{p.quantity <= 5 ? (
+                  <span className="stock-low">{p.quantity}</span>
+                ) : (
+                  <span className="stock-ok">{p.quantity}</span>
+                )}</td>
                 <td>
                   {p.documentUrl ? (
                     <a href={p.documentUrl} target="_blank" rel="noreferrer">View</a>
@@ -160,6 +169,7 @@ export default function Products() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );
