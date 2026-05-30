@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+/** On Vercel, use /api proxy so browser never hits Render directly (ISP blocking). */
+function resolveBaseUrl() {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (import.meta.env.PROD && (!envUrl || envUrl.includes('onrender.com'))) {
+    return '/api';
+  }
+  return envUrl || 'http://localhost:5026/api';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5026/api',
+  baseURL: resolveBaseUrl(),
   timeout: 120000,
 });
 

@@ -1,10 +1,7 @@
-/** Ping API health to wake Render (free tier sleeps after ~15 min idle). */
-export function getApiBaseUrl() {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5026/api';
-  return apiUrl.replace(/\/api\/?$/, '');
-}
-
+/** Wake API via same-origin /health proxy on Vercel (works when Render is blocked locally). */
 export function wakeApi() {
-  const url = `${getApiBaseUrl()}/health`;
-  fetch(url, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+  const envUrl = import.meta.env.VITE_API_URL;
+  const useProxy = import.meta.env.PROD && (!envUrl || envUrl.includes('onrender.com'));
+  const url = useProxy ? '/health' : `${(envUrl || 'http://localhost:5026/api').replace(/\/api\/?$/, '')}/health`;
+  fetch(url, { mode: useProxy ? 'cors' : 'no-cors', cache: 'no-store' }).catch(() => {});
 }
