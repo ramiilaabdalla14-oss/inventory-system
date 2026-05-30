@@ -96,7 +96,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.MapGet("/health", () => Results.Ok("healthy"));
+app.MapMethods("/health", ["GET", "HEAD"], () => Results.Ok("healthy"));
 
 for (var attempt = 1; attempt <= 10; attempt++)
 {
