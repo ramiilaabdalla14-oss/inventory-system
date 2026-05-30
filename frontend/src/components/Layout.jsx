@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { wakeApi } from '../api/wakeApi';
 import './Layout.css';
 
 const NAV = [
@@ -14,6 +15,10 @@ export default function Layout() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    wakeApi();
+  }, []);
 
   const handleLogout = () => {
     logout();

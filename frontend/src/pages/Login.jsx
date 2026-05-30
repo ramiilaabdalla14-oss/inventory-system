@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { authApi } from '../api/services';
+import { wakeApi } from '../api/wakeApi';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
@@ -13,6 +14,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const sessionExpired = searchParams.get('session') === 'expired';
+
+  useEffect(() => {
+    wakeApi();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
